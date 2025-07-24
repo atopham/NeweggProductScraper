@@ -33,6 +33,7 @@ class NeweggDuckDB:
                 rating VARCHAR,
                 reviews_count VARCHAR,
                 description TEXT,
+                product_url VARCHAR,
                 scraped_at TIMESTAMP
             )
         """)
@@ -41,6 +42,7 @@ class NeweggDuckDB:
         self.conn.execute("""
             CREATE TABLE IF NOT EXISTS reviews (
                 review_id VARCHAR PRIMARY KEY,
+                product_item_number VARCHAR,
                 page_number INTEGER,
                 review_index INTEGER,
                 title VARCHAR,
@@ -54,17 +56,17 @@ class NeweggDuckDB:
                 overall_review TEXT,
                 full_content TEXT,
                 timestamp TIMESTAMP,
-                -- Product info (denormalized)
-                product_url VARCHAR,
-                product_title VARCHAR,
-                product_brand VARCHAR,
-                product_price VARCHAR,
-                product_rating VARCHAR,
-                product_reviews_count VARCHAR,
-                product_item_number VARCHAR,
-                scraped_at TIMESTAMP
             )
         """)
+            # -- Product info (denormalized)
+            # product_url VARCHAR,
+            # product_title VARCHAR,
+            # product_brand VARCHAR,
+            # product_price VARCHAR,
+            # product_rating VARCHAR,
+            # product_reviews_count VARCHAR,
+            # product_item_number VARCHAR,
+            # scraped_at TIMESTAMP
         
         # Metadata table
         self.conn.execute("""
@@ -91,8 +93,8 @@ class NeweggDuckDB:
             product = scraped_data["product"]
             self.conn.execute("""
                 INSERT OR REPLACE INTO products 
-                (item_number, title, brand, price, rating, reviews_count, description, scraped_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                (item_number, title, brand, price, rating, reviews_count, description, product_url, scraped_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, [
                 product["item_number"],
                 product["title"],
@@ -101,6 +103,7 @@ class NeweggDuckDB:
                 product["rating"],
                 product["reviews_count"],
                 product["description"],
+                product["product_url"],
                 datetime.fromisoformat(scraped_data["metadata"]["scraped_at"])
             ])
             
@@ -110,13 +113,14 @@ class NeweggDuckDB:
                 for review in page_reviews:
                     self.conn.execute("""
                         INSERT OR REPLACE INTO reviews 
-                        (review_id, page_number, review_index, title, rating, author, date, 
+                        (review_id, product_item_number, page_number, review_index, title, rating, author, date, 
                          is_verified, ownership, pros, cons, overall_review, full_content, 
                          timestamp, product_url, product_title, product_brand, product_price,
-                         product_rating, product_reviews_count, product_item_number, scraped_at)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                         product_rating, product_reviews_count, product_item_number, scraped_at) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """, [
                         review["review_id"],
+                        product["item_number"],
                         review["page_number"],
                         review["review_index"],
                         review["title"],
@@ -131,12 +135,12 @@ class NeweggDuckDB:
                         review["full_content"],
                         datetime.fromisoformat(review["timestamp"]),
                         scraped_data["metadata"]["product_url"],
-                        product["title"],
-                        product["brand"],
-                        product["price"],
-                        product["rating"],
-                        product["reviews_count"],
-                        product["item_number"],
+                        # product["title"],
+                        # product["brand"],
+                        # product["price"],
+                        # product["rating"],
+                        # product["reviews_count"],
+                        # product["item_number"],
                         datetime.fromisoformat(scraped_data["metadata"]["scraped_at"])
                     ])
             
