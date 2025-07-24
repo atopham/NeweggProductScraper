@@ -1,0 +1,42 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+.venv/
+env/
+venv/
+
+# Pytest / coverage / logs
+*.log
+*.cover
+coverage.*
+htmlcov/
+.tox/
+.cache/
+
+# IDE / editor files
+.vscode/
+.idea/
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Jupyter notebooks checkpoints
+.ipynb_checkpoints/
+
+# Playwright
+playwright/.cache/
+playwright-report/
+
+# Environment variables
+.env
+.env.local
+
+# SQLite or other local data stores
+*.db
+*.sqlite
+*.sqlite3
+data/
