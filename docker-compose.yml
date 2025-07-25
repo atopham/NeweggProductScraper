@@ -11,8 +11,9 @@ services:
       # Database configuration
       DUCKDB_PATH: "/app/data/newegg_data.duckdb"
       # Scraper configuration
-      HEADLESS: "true"
-      MAX_REVIEW_PAGES: "0"
+      # Set to "true" for headless mode, "false" for non-headless with Xvfb
+      HEADLESS: "false"
+      MAX_REVIEW_PAGES: "3"
       # Optional: Add any other environment variables
       PYTHONUNBUFFERED: "1"
     # Optional: Add restart policy for production

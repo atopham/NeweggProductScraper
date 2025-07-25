@@ -3,11 +3,13 @@ FROM python:3.11-slim
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies including Xvfb for virtual display
 RUN apt-get update && apt-get install -y \
     wget \
     gnupg \
     ca-certificates \
+    xvfb \
+    x11-utils \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Chrome and ChromeDriver for Selenium
@@ -43,9 +45,18 @@ RUN mkdir -p /app/data
 # Set environment variables
 ENV DUCKDB_PATH=/app/data/newegg_data.duckdb
 ENV PYTHONPATH=/app
+ENV DISPLAY=:99
 
 # Expose port if needed for web interface (optional)
 # EXPOSE 8000
 
-# Default command
-CMD ["python", "main.py"] 
+# Create startup script
+RUN echo '#!/bin/bash\n\
+echo "🚀 Starting Xvfb..."\n\
+Xvfb :99 -screen 0 1024x768x24 &\n\
+sleep 2\n\
+echo "🚀 Starting scraper..."\n\
+exec python main.py' > /app/start.sh && chmod +x /app/start.sh
+
+# Default command - use startup script
+CMD ["/app/start.sh"] 
