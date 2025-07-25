@@ -1,4 +1,4 @@
-from scraper.newegg_scraper import scrape_newegg_product, prepare_for_duckdb
+from newegg_scraper import scrape_newegg_product, prepare_for_duckdb
 from duckdb_integration import NeweggDuckDB
 from config import Config
 # import json
