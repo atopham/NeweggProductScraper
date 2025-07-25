@@ -1,0 +1,38 @@
+services:
+  newegg-scraper:
+    build: .
+    container_name: newegg-scraper
+    volumes:
+      # Mount data directory for persistent storage
+      - ./data:/app/data
+      # Mount logs directory (optional)
+      - ./logs:/app/logs
+    environment:
+      # Database configuration
+      DUCKDB_PATH: "/app/data/newegg_data.duckdb"
+      # Scraper configuration
+      HEADLESS: "true"
+      MAX_REVIEW_PAGES: "0"
+      # Optional: Add any other environment variables
+      PYTHONUNBUFFERED: "1"
+    # Optional: Add restart policy for production
+    # restart: unless-stopped
+    # Optional: Add resource limits
+    # deploy:
+    #   resources:
+    #     limits:
+    #       memory: 2G
+    #       cpus: '1.0'
+    #     reservations:
+    #       memory: 1G
+    #       cpus: '0.5'
+
+  # Optional: Add a simple web interface for viewing data
+  # web-interface:
+  #   build: ./web-interface
+  #   ports:
+  #     - "8000:8000"
+  #   volumes:
+  #     - ./data:/app/data:ro
+  #   depends_on:
+  #     - newegg-scraper 

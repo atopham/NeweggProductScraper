@@ -49,7 +49,18 @@ class NeweggScraper:
                 '--disable-backgrounding-occluded-windows',
                 '--disable-renderer-backgrounding',
                 '--disable-features=TranslateUI',
-                '--disable-ipc-flooding-protection'
+                '--disable-ipc-flooding-protection',
+                '--disable-gpu',
+                '--disable-software-rasterizer',
+                '--disable-background-networking',
+                '--disable-default-apps',
+                '--disable-sync',
+                '--metrics-recording-only',
+                '--no-first-run',
+                '--safebrowsing-disable-auto-update',
+                '--disable-client-side-phishing-detection',
+                '--disable-component-update',
+                '--disable-domain-reliability'
             ]
         )
         
@@ -208,6 +219,8 @@ class NeweggScraper:
                 ".product-bullets",
                 "ul.product-bullets"
             ], "Description not found"),
+
+            "product_url": self.page.url,
             
             "item_number": self._extract_item_number(self.page.url)
         }

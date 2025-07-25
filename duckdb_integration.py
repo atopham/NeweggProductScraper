@@ -1,5 +1,6 @@
 import duckdb
 import json
+import os
 from datetime import datetime
 from typing import Dict
 import pandas as pd
@@ -10,15 +11,29 @@ class NeweggDuckDB:
     Handles data insertion, querying, and analysis.
     """
     
-    def __init__(self, db_path: str = ":memory:"):
+    def __init__(self, db_path: str = None):
         """
         Initialize DuckDB connection.
         
         Args:
-            db_path: Path to DuckDB file (use ":memory:" for in-memory database)
+            db_path: Path to DuckDB file. If None, uses environment variable or defaults to ":memory:"
         """
+        # Database path priority:
+        # 1. Explicit db_path parameter
+        # 2. DUCKDB_PATH environment variable
+        # 3. Default to ":memory:" for development
+        if db_path is None:
+            db_path = os.getenv('DUCKDB_PATH', ':memory:')
+        
+        # Ensure data directory exists for file-based databases
+        if db_path != ':memory:' and '/' in db_path:
+            os.makedirs(os.path.dirname(db_path), exist_ok=True)
+        
+        self.db_path = db_path
         self.conn = duckdb.connect(db_path)
         self._create_tables()
+        
+        print(f"🦆 Connected to DuckDB: {db_path}")
     
     def _create_tables(self):
         """Create the necessary tables for Newegg data."""
@@ -56,17 +71,9 @@ class NeweggDuckDB:
                 overall_review TEXT,
                 full_content TEXT,
                 timestamp TIMESTAMP,
+                scraped_at TIMESTAMP
             )
         """)
-            # -- Product info (denormalized)
-            # product_url VARCHAR,
-            # product_title VARCHAR,
-            # product_brand VARCHAR,
-            # product_price VARCHAR,
-            # product_rating VARCHAR,
-            # product_reviews_count VARCHAR,
-            # product_item_number VARCHAR,
-            # scraped_at TIMESTAMP
         
         # Metadata table
         self.conn.execute("""
@@ -111,13 +118,13 @@ class NeweggDuckDB:
             reviews = scraped_data["reviews"]
             for page_reviews in reviews:
                 for review in page_reviews:
+                    # product_url, product_title, product_brand, product_price,
+                    # product_rating, product_reviews_count, product_item_number,
                     self.conn.execute("""
                         INSERT OR REPLACE INTO reviews 
                         (review_id, product_item_number, page_number, review_index, title, rating, author, date, 
-                         is_verified, ownership, pros, cons, overall_review, full_content, 
-                         timestamp, product_url, product_title, product_brand, product_price,
-                         product_rating, product_reviews_count, product_item_number, scraped_at) 
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                         is_verified, ownership, pros, cons, overall_review, full_content, timestamp, scraped_at) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """, [
                         review["review_id"],
                         product["item_number"],
@@ -134,16 +141,8 @@ class NeweggDuckDB:
                         review["overall_review"],
                         review["full_content"],
                         datetime.fromisoformat(review["timestamp"]),
-                        scraped_data["metadata"]["product_url"],
-                        # product["title"],
-                        # product["brand"],
-                        # product["price"],
-                        # product["rating"],
-                        # product["reviews_count"],
-                        # product["item_number"],
                         datetime.fromisoformat(scraped_data["metadata"]["scraped_at"])
                     ])
-            
             # Insert metadata
             metadata = scraped_data["metadata"]
             self.conn.execute("""
