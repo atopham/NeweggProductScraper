@@ -46,6 +46,25 @@ services:
     #       memory: 1G
     #       cpus: '0.5'
 
+  # Database query service
+  db-query:
+    build: .
+    container_name: newegg-db-query
+    volumes:
+      # Mount data directory to access the database
+      - ./data:/app/data
+      # Mount current directory for output files
+      - .:/app/output
+    environment:
+      # Database configuration
+      DUCKDB_PATH: "/app/data/newegg_data.duckdb"
+      PYTHONUNBUFFERED: "1"
+    # Use bash as entrypoint to allow passing arguments
+    entrypoint: ["python", "query_db.py", "--docker"]
+    # This service is for interactive use, so we don't want it to start automatically
+    profiles:
+      - query
+
   # Optional: Add a simple web interface for viewing data
   # web-interface:
   #   build: ./web-interface

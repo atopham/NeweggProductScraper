@@ -5,22 +5,20 @@ Works with both local and Docker databases.
 """
 
 import argparse
-import os
 import sys
+import os
 from duckdb_integration import NeweggDuckDB
 from config import Config
-import pandas as pd
 
-def print_dataframe(df, title=""):
-    """Pretty print a DataFrame."""
-    if title:
-        print(f"\n{title}")
-        print("=" * 50)
-    
+def print_dataframe(df, title: str):
+    """Print a DataFrame with a title."""
+    print(f"\n{title}")
+    print("=" * 80)
     if df.empty:
         print("No data found.")
     else:
         print(df.to_string(index=False))
+    print("=" * 80)
 
 def main():
     """Main function for database queries."""
@@ -53,18 +51,37 @@ def main():
     parser.add_argument('--export-csv', type=str,
                        help='Export data to CSV (item_number)')
     
+    parser.add_argument('--docker', action='store_true',
+                       help='Use Docker database path (/app/data/newegg_data.duckdb)')
+    
     args = parser.parse_args()
     
     # Set database path
-    if args.db_path:
-        os.environ['DUCKDB_PATH'] = args.db_path
+    if args.docker:
+        # Use Docker path
+        db_path = "/app/data/newegg_data.duckdb"
+        print(f"🐳 Using Docker database path: {db_path}")
+    elif args.db_path:
+        # Use explicit path
+        db_path = args.db_path
+        print(f"📁 Using explicit database path: {db_path}")
+    else:
+        # Use environment variable or default
+        # db_path = os.getenv('DUCKDB_PATH', ':memory:')
+        db_path = Config.DUCKDB_PATH
+        print(f"🔧 Using database path: {db_path}")
     
     # Initialize database
     try:
-        db = NeweggDuckDB()
+        db = NeweggDuckDB(db_path)
         print(f"🦆 Connected to database: {db.db_path}")
     except Exception as e:
         print(f"❌ Error connecting to database: {e}")
+        print("\n💡 Troubleshooting tips:")
+        print("  - Use --docker flag for Docker environment")
+        print("  - Use --db-path to specify custom path")
+        print("  - Check if database file exists")
+        print("  - Ensure proper file permissions")
         sys.exit(1)
     
     try:
@@ -116,35 +133,22 @@ def main():
         
         # Export to CSV
         elif args.export_csv:
-            db.export_to_csv(args.export_csv)
-            print(f"✅ Exported data for {args.export_csv} to CSV files")
+            print(f"💾 Exporting data for {args.export_csv}...")
+            db.export_to_csv(args.export_csv, ".")
+            print("✅ Export completed!")
         
-        # Default: show available commands
         else:
-            print("🔍 DATABASE QUERY TOOL")
-            print("=" * 50)
-            print("Available commands:")
-            print("  --list-products                    List all products")
-            print("  --product-summary ITEM_NUMBER     Get product summary")
-            print("  --reviews ITEM_NUMBER             Get recent reviews")
-            print("  --rating-distribution ITEM_NUMBER Get rating distribution")
-            print("  --search ITEM_NUMBER TERM         Search reviews")
-            print("  --recent-reviews ITEM_NUMBER LIMIT Get recent reviews")
-            print("  --high-rated ITEM_NUMBER MIN_RATING Get high-rated reviews")
-            print("  --export-csv ITEM_NUMBER          Export to CSV")
-            print("\nExamples:")
-            print("  python query_db.py --list-products")
-            print("  python query_db.py --product-summary N82E16819113877")
-            print("  python query_db.py --search N82E16819113877 performance")
-            print("  python query_db.py --high-rated N82E16819113877 4")
+            # No arguments provided, show help
+            parser.print_help()
+            print("\n💡 Quick examples:")
+            print("  python query_db.py --docker --list-products")
+            print("  python query_db.py --docker --product-summary N82E16819113877")
+            print("  python query_db.py --docker --reviews N82E16819113877")
+            print("  python query_db.py --docker --search N82E16819113877 performance")
     
     except Exception as e:
-        print(f"❌ Error querying database: {e}")
-        import traceback
-        traceback.print_exc()
-    
-    finally:
-        db.close()
+        print(f"❌ Error during query: {e}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main() 

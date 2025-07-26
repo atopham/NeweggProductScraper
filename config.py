@@ -8,7 +8,8 @@ class Config:
     SCRAPER_TYPE = os.getenv('SCRAPER_TYPE', 'enhanced')  # 'basic' or 'enhanced'
     
     # Database configuration
-    DUCKDB_PATH = os.getenv('DUCKDB_PATH', ':memory:')
+    # DUCKDB_PATH = os.getenv('DUCKDB_PATH', ':memory:')
+    DUCKDB_PATH = os.getenv('DUCKDB_PATH', './data/newegg_data.duckdb')
     
     # Scraper configuration
     HEADLESS = os.getenv('HEADLESS', 'false').lower() == 'true'
