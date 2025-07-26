@@ -9,7 +9,7 @@ class Config:
     
     # Scraper configuration
     HEADLESS = os.getenv('HEADLESS', 'false').lower() == 'true'
-    MAX_REVIEW_PAGES = int(os.getenv('MAX_REVIEW_PAGES', '3'))  # 0 = all pages
+    MAX_REVIEW_PAGES = int(os.getenv('MAX_REVIEW_PAGES', '0'))  # 0 = all pages
     REQUEST_DELAY = float(os.getenv('REQUEST_DELAY', '1.0'))  # seconds between requests
     
     # Output configuration
