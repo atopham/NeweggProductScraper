@@ -39,24 +39,18 @@ COPY . .
 # Install Playwright browsers
 RUN playwright install chromium
 
-# Create data directory for persistent storage
-RUN mkdir -p /app/data
+# Create data and logs directories for persistent storage
+RUN mkdir -p /app/data /app/logs
 
-# Set environment variables
-ENV DUCKDB_PATH=/app/data/newegg_data.duckdb
+# Set only essential environment variables that don't change
 ENV PYTHONPATH=/app
 ENV DISPLAY=:99
 
+# Make startup script executable
+RUN chmod +x /app/start.sh
+
 # Expose port if needed for web interface (optional)
 # EXPOSE 8000
-
-# Create startup script
-RUN echo '#!/bin/bash\n\
-echo "🚀 Starting Xvfb..."\n\
-Xvfb :99 -screen 0 1024x768x24 &\n\
-sleep 2\n\
-echo "🚀 Starting scraper..."\n\
-exec python main.py' > /app/start.sh && chmod +x /app/start.sh
 
 # Default command - use startup script
 CMD ["/app/start.sh"] 

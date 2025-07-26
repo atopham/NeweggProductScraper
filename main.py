@@ -1,4 +1,5 @@
 from newegg_scraper import scrape_newegg_product, prepare_for_duckdb
+from enhanced_scraper import scrape_newegg_product_enhanced
 from duckdb_integration import NeweggDuckDB
 from config import Config
 # import json
@@ -23,12 +24,40 @@ def main():
     db = NeweggDuckDB(Config.DUCKDB_PATH)
     
     try:
-        # Scrape the product
-        result = scrape_newegg_product(
-            url=url, 
-            max_review_pages=Config.get_max_review_pages(),
-            headless=Config.HEADLESS
-        )
+        # Choose scraper based on configuration
+        if Config.is_enhanced_scraper():
+            print("🚀 Using ENHANCED scraper with advanced features...")
+            
+            # Import enhanced scraper dependencies
+            from rate_limiter import RateLimitConfig
+            
+            # Configure enhanced scraper settings
+            rate_config = RateLimitConfig(
+                requests_per_second=Config.RATE_LIMIT_PER_SECOND,
+                burst_size=3,
+                adaptive=True,
+                error_threshold=0.1,
+                success_threshold=0.9
+            )
+            
+            # Scrape with enhanced features
+            result = scrape_newegg_product_enhanced(
+                url=url, 
+                max_review_pages=Config.get_max_review_pages(),
+                headless=Config.HEADLESS,
+                user_agent_strategy=Config.USER_AGENT_STRATEGY,
+                rate_limit_config=rate_config
+            )
+            
+        else:
+            print("📦 Using BASIC scraper...")
+            
+            # Scrape with basic scraper
+            result = scrape_newegg_product(
+                url=url, 
+                max_review_pages=Config.get_max_review_pages(),
+                headless=Config.HEADLESS
+            )
 
         # print("🦆 Result: ", result)
         
@@ -50,44 +79,30 @@ def main():
         print(f"Total Reviews: {result['metadata']['total_reviews']}")
         print(f"Review Pages: {result['metadata']['total_review_pages']}")
         
+        if Config.is_enhanced_scraper():
+            print(f"User Agent: {result['metadata']['user_agent'][:50]}...")
+            print(f"Browser Profile: {result['metadata']['browser_profile']}")
+        
         # Get and display database summary
         item_number = result['product']['item_number']
         summary = db.get_product_summary(item_number)
         
-        if not summary.empty:
-            print("\n🦆 DATABASE SUMMARY")
-            print("=" * 50)
-            print(f"Actual Reviews in DB: {summary.iloc[0]['actual_reviews']}")
-            print(f"Average Rating: {summary.iloc[0]['avg_rating']:.2f}")
-            print(f"Verified Reviews: {summary.iloc[0]['verified_reviews']}")
+        print(f"\n📊 DATABASE SUMMARY")
+        print("=" * 50)
+        print(f"Product Item Number: {item_number}")
+        print(f"Total Reviews in DB: {len(summary)}")
         
         # Export to CSV if enabled
         if Config.EXPORT_CSV:
-            os.makedirs(Config.OUTPUT_DIR, exist_ok=True)
+            print(f"\n💾 Exporting to CSV...")
             db.export_to_csv(item_number, Config.OUTPUT_DIR)
+            print(f"✅ Data exported to {Config.OUTPUT_DIR}")
         
-        # Save JSON backup
-        # timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        # os.makedirs(Config.OUTPUT_DIR, exist_ok=True)
-        
-        # with open(f"{Config.OUTPUT_DIR}/scraped_data_{timestamp}.json", "w") as f:
-        #     json.dump(result, f, indent=2)
-        
-        print(f"\n💾 Data saved:")
-        print(f"  Database: {Config.DUCKDB_PATH}")
-        # print(f"  JSON backup: {Config.OUTPUT_DIR}/scraped_data_{timestamp}.json")
-        if Config.EXPORT_CSV:
-            print(f"  CSV exports: {Config.OUTPUT_DIR}/")
-        
-        print(f"\n✅ Scraping completed successfully!")
+        print("\n✅ Scraping and database operations completed successfully!")
         
     except Exception as e:
-        print(f"❌ Error during scraping: {e}")
-        import traceback
-        traceback.print_exc()
-    
-    finally:
-        db.close()
+        print(f"❌ Error during scraping: {str(e)}")
+        raise e
 
 if __name__ == "__main__":
     main()

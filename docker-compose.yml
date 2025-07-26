@@ -8,12 +8,30 @@ services:
       # Mount logs directory (optional)
       - ./logs:/app/logs
     environment:
+      # Scraper selection
+      SCRAPER_TYPE: "enhanced"  # Options: "basic" or "enhanced"
+      
       # Database configuration
       DUCKDB_PATH: "/app/data/newegg_data.duckdb"
+      
       # Scraper configuration
-      # Set to "true" for headless mode, "false" for non-headless with Xvfb
       HEADLESS: "false"
       MAX_REVIEW_PAGES: "3"
+      REQUEST_DELAY: "1.0"
+      
+      # Enhanced scraper specific settings
+      USER_AGENT_STRATEGY: "weighted"  # Options: "random", "sequential", "weighted"
+      MAX_WORKERS: "2"  # For concurrent scraping
+      RATE_LIMIT_PER_SECOND: "0.5"  # For enhanced rate limiting
+      
+      # Output configuration
+      OUTPUT_DIR: "/app/data"
+      EXPORT_CSV: "false"
+      
+      # Logging configuration
+      LOG_LEVEL: "INFO"
+      LOG_FILE: "/app/logs/scraper.log"
+      
       # Optional: Add any other environment variables
       PYTHONUNBUFFERED: "1"
     # Optional: Add restart policy for production

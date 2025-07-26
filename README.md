@@ -27,7 +27,7 @@ A web scraper for Newegg products that extracts product information and reviews,
 
 3. **Or use the configuration script**:
    ```bash
-   python run_scraper.py --headless --max-pages 5
+   python run_scraper.py --max-pages 5
    ```
 
 ### Docker Deployment
