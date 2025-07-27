@@ -380,9 +380,10 @@ class NeweggScraper:
         is_verified = verified_element.count() > 0
         
         # Extract ownership duration
+        ownership_element = element.locator('.comments-cell-side .comments-text:not(.comments-verified-owner)').first
         ownership = "N/A"
-        if date_element.count() > 0:
-            ownership_text = date_element.inner_text().strip()
+        if ownership_element.count() > 0:
+            ownership_text = ownership_element.inner_text().strip()
             if "Ownership:" in ownership_text:
                 ownership = ownership_text.split("Ownership:")[1].strip()
         
