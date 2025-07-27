@@ -13,11 +13,11 @@ class Config:
     
     # Scraper configuration
     HEADLESS = os.getenv('HEADLESS', 'false').lower() == 'true'
-    MAX_REVIEW_PAGES = int(os.getenv('MAX_REVIEW_PAGES', '3'))  # 0 = all pages
+    MAX_REVIEW_PAGES = int(os.getenv('MAX_REVIEW_PAGES', '0'))  # 0 = all pages
     REQUEST_DELAY = float(os.getenv('REQUEST_DELAY', '1.0'))  # seconds between requests
     
     # Enhanced scraper specific settings
-    USER_AGENT_STRATEGY = os.getenv('USER_AGENT_STRATEGY', 'weighted')  # random, sequential, weighted
+    USER_AGENT_STRATEGY = os.getenv('USER_AGENT_STRATEGY', 'random')  # random, sequential, weighted
     MAX_WORKERS = int(os.getenv('MAX_WORKERS', '2'))  # for concurrent scraping
     RATE_LIMIT_PER_SECOND = float(os.getenv('RATE_LIMIT_PER_SECOND', '0.5'))  # for enhanced rate limiting
     
