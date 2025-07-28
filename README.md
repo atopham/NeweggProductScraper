@@ -123,7 +123,7 @@ The scraper can be configured using environment variables. You can set these in 
 SCRAPER_TYPE=enhanced
 DUCKDB_PATH=./data/newegg_data.duckdb
 HEADLESS=false
-MAX_REVIEW_PAGES=5
+MAX_REVIEW_PAGES=6
 USER_AGENT_STRATEGY=weighted
 RATE_LIMIT_PER_SECOND=0.5
 EXPORT_CSV=true
