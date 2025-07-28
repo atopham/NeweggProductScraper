@@ -16,7 +16,7 @@ services:
       
       # Scraper configuration
       HEADLESS: "false"
-      MAX_REVIEW_PAGES: "3"
+      MAX_REVIEW_PAGES: "0"
       REQUEST_DELAY: "1.0"
       
       # Enhanced scraper specific settings
